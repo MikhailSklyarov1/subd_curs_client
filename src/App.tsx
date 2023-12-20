@@ -91,12 +91,17 @@ function App() {
         <h3>Выбор эмоций</h3>
         <Divider orientation="left"></Divider>
         <Collapse
-          items={[{ key: '1', label: 'Доступные эмоции', children: <CheckboxFilter></CheckboxFilter> }]}
+          items={[{
+            key: '1', label: 'Доступные эмоции', children: <div>
+              <CheckboxFilter></CheckboxFilter>
+              <h5>*Результат содержит ТОЛЬКО выбранные эмоции</h5>
+              <h5>**Без выбора выводятся все эмоции</h5>
+            </div>
+          }]}
         />
       </div>
       <div className='block-wrapper'>
         <Table columns={columns} dataSource={data} />
-        {JSON.stringify(filter, null, 2)}
       </div>
     </div>
   );
