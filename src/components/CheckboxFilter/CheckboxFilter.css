@@ -1,0 +1,10 @@
+.group-emo {
+    width: 150px;
+}
+
+.checkbox-wrapper {
+    max-width: 8rem;
+    border-width: 1px;
+    padding: 5px;
+    height: 180px;
+}

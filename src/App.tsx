@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
-import ILesson from './interfaces/ILesson'
-import LessonService from './API/mainAPI';
 import { Slider, Switch } from 'antd';
 import { Space, Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import { useAppDispatch, useAppSelector } from './hooks.ts/redux';
+import { fetchData } from './store/reducers/ActionCreators';
+import { setParams, setNum, setRange } from './store/reducers/FilterSlice';
+import CheckboxFilter from './components/CheckboxFilter/CheckboxFilter';
+import type { SliderMarks } from 'antd/es/slider';
+import { Collapse, Divider } from 'antd';
 
 function App() {
 
-  const [lessons, setLessons] = useState<any[]>([]);
-  const [numRecords, setNumRecords] = useState(5);
-  const [rangeNumEmo, setrangeNumEmo] = useState([1,3]);
-
+  const dispatch = useAppDispatch();
+  const { filter } = useAppSelector(state => state.filterReducer);
+  const { data } = useAppSelector(state => state.filterReducer);
 
   const columns: ColumnsType<any> = [
     {
@@ -26,40 +29,76 @@ function App() {
     },];
 
 
-
-
   useEffect(() => {
-    fetchLessons();
-  }, [numRecords, rangeNumEmo]);
+    dispatch(fetchData(filter.num, filter.minVary, filter.maxVary, filter.emotions));
+  }, [filter.minVary, filter.maxVary]);
 
-  async function fetchLessons() {
-    try {
-      const res = await LessonService.getSomeRecordsWithVaryEmo(rangeNumEmo[0], rangeNumEmo[1], numRecords);
-      setLessons(res.data);
-      // console.log(lessons)
-    }
-    catch(e) {
-      console.error('Error: ', e);
-    }
-  }
 
   const [disabled, setDisabled] = useState(false);
 
   const onChange = (newValue: number) => {
-    setNumRecords(newValue);
+    dispatch(setNum(newValue));
   };
 
   const onRangeChange = (newValue: any) => {
-    console.log(newValue)
-    setrangeNumEmo(newValue);
+    dispatch(setRange(newValue));
   };
 
+  const marksNum: SliderMarks = {
+    0: '0',
+    100: '100'
+  };
+
+  const marksRange: SliderMarks = {
+    1: '1',
+    10: '10'
+  };
+
+  const onChangeCompleteFunc = (newValue: any) => {
+    console.log('onChangeComplete ', newValue)
+    dispatch(setNum(newValue));
+    dispatch(fetchData(newValue, filter.minVary, filter.maxVary, filter.emotions))
+  }
+
+
   return (
-    <>
-      <Slider defaultValue={30} value={numRecords} onChange={onChange} disabled={disabled} />
-      <Slider range value={rangeNumEmo} onChange={onRangeChange} defaultValue={[1, 10]} disabled={disabled} />
-      <Table columns={columns} dataSource={lessons} />
-    </>
+    <div className='main-container'>
+      <h3>Количество записей</h3>
+      <Slider
+        defaultValue={10}
+        marks={marksNum}
+        /*tooltip={{ open: true, placement: 'bottom'}}*/
+        value={filter.num}
+        onChange={onChange}
+        disabled={disabled}
+        onChangeComplete={onChangeCompleteFunc}
+      />
+      <div className='block-wrapper'>
+        <h3>Количество различных эмоций для одного текста</h3>
+        <Slider
+          max={10}
+          min={1}
+          marks={marksRange}
+          /*tooltip={{ open: true, placement: 'bottom'}}*/
+          range
+          value={[filter.minVary, filter.maxVary]}
+          onChange={onRangeChange}
+          defaultValue={[1, 4]}
+          disabled={disabled}
+        />
+      </div>
+      <div className='block-wrapper'>
+        <h3>Выбор эмоций</h3>
+        <Divider orientation="left"></Divider>
+        <Collapse
+          items={[{ key: '1', label: 'Доступные эмоции', children: <CheckboxFilter></CheckboxFilter> }]}
+        />
+      </div>
+      <div className='block-wrapper'>
+        <Table columns={columns} dataSource={data} />
+        {JSON.stringify(filter, null, 2)}
+      </div>
+    </div>
   );
 };
 
