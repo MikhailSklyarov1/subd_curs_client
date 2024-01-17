@@ -34,8 +34,7 @@ export const filterSlice = createSlice({
         setEmotions(state, action: PayloadAction<string[]>) {
             state.filter.emotions = action.payload;
         },
-        getData(state, action: PayloadAction<IData[]>) {
-            // state.isLoading = true;
+        setData(state, action: PayloadAction<IData[]>) {
             state.data = action.payload;
         }
     }

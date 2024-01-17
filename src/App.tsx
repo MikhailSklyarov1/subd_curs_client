@@ -1,42 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import './App.css';
-import { Slider, Switch } from 'antd';
-import { Space, Table, Tag } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
-import { useAppDispatch, useAppSelector } from './hooks.ts/redux';
-import { fetchData } from './store/reducers/ActionCreators';
-import { setParams, setNum, setRange } from './store/reducers/FilterSlice';
 import CheckboxFilter from './components/CheckboxFilter/CheckboxFilter';
-import type { SliderMarks } from 'antd/es/slider';
-import { Collapse, Divider } from 'antd';
+import { useAppDispatch, useAppSelector } from './hooks/redux';
+import { fetchData } from './store/reducers/ActionCreators';
+import { setNum, setRange } from './store/reducers/FilterSlice';
+import { marksNum, marksRange } from './config/sliderConfig';
+import { Collapse, Divider, Slider, Table } from 'antd';
+import columnsDatasetTable from './config/tableConfig';
+import React, { useEffect } from 'react';
+import './App.css';
+
 
 function App() {
-
   const dispatch = useAppDispatch();
   const { filter } = useAppSelector(state => state.filterReducer);
   const { data } = useAppSelector(state => state.filterReducer);
-
-  const columns: ColumnsType<any> = [
-    {
-      title: 'Текст',
-      dataIndex: '_id',
-      key: '_id',
-    },
-    {
-      title: 'Эмоция',
-      dataIndex: 'emotions',
-      key: 'emotions',
-    },];
-
 
   useEffect(() => {
     dispatch(fetchData(filter.num, filter.minVary, filter.maxVary, filter.emotions));
   }, [filter.minVary, filter.maxVary]);
 
-
-  const [disabled, setDisabled] = useState(false);
-
-  const onChange = (newValue: number) => {
+  const onNumChange = (newValue: number) => {
     dispatch(setNum(newValue));
   };
 
@@ -44,37 +26,25 @@ function App() {
     dispatch(setRange(newValue));
   };
 
-  const marksNum: SliderMarks = {
-    0: '0',
-    100: '100'
-  };
-
-  const marksRange: SliderMarks = {
-    1: '1',
-    10: '10'
-  };
-
-  const onChangeCompleteFunc = (newValue: any) => {
+  const completeNum = (newValue: any) => {
     console.log('onChangeComplete ', newValue)
-    dispatch(setNum(newValue));
     dispatch(fetchData(newValue, filter.minVary, filter.maxVary, filter.emotions))
   }
 
-
   return (
     <div className='main-container'>
-      <h3>Количество записей</h3>
+      <h4>Количество записей</h4>
       <Slider
         defaultValue={10}
         marks={marksNum}
         /*tooltip={{ open: true, placement: 'bottom'}}*/
         value={filter.num}
-        onChange={onChange}
-        disabled={disabled}
-        onChangeComplete={onChangeCompleteFunc}
+        onChange={onNumChange}
+        onChangeComplete={completeNum}
       />
+      <Divider orientation="left"></Divider>
       <div className='block-wrapper'>
-        <h3>Количество различных эмоций для одного текста</h3>
+        <h4>Количество различных эмоций для одного текста</h4>
         <Slider
           max={10}
           min={1}
@@ -84,12 +54,11 @@ function App() {
           value={[filter.minVary, filter.maxVary]}
           onChange={onRangeChange}
           defaultValue={[1, 4]}
-          disabled={disabled}
         />
       </div>
+      <Divider orientation="left"></Divider>
       <div className='block-wrapper'>
-        <h3>Выбор эмоций</h3>
-        <Divider orientation="left"></Divider>
+        <h4>Выбор эмоций</h4>
         <Collapse
           items={[{
             key: '1', label: 'Доступные эмоции', children: <div>
@@ -100,8 +69,9 @@ function App() {
           }]}
         />
       </div>
+      <Divider orientation="left"></Divider>
       <div className='block-wrapper'>
-        <Table columns={columns} dataSource={data} />
+        <Table columns={columnsDatasetTable} dataSource={data} />
       </div>
     </div>
   );
